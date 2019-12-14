@@ -9,8 +9,12 @@ import java.util.Map;
 public class ServerSocketThread implements Runnable {
     private static final int PORT = 8778;
 
+
     private HashMap<String, ClientThread> clients = new HashMap<>();
     private ServerSocket server;
+    private Thread serverInfoThread;
+
+
 
 
     @Override
@@ -18,6 +22,10 @@ public class ServerSocketThread implements Runnable {
         boolean isInterrupted = false;
         try {
             server = new ServerSocket(PORT);
+            serverInfoThread = new Thread(new ServerSocketInfoThread(this));
+            serverInfoThread.setDaemon(true);
+            serverInfoThread.start();
+
             System.out.println("Server is started");
             while (!isInterrupted) {
                 if(server.isClosed()) break;
@@ -86,4 +94,7 @@ public class ServerSocketThread implements Runnable {
         }
     }
 
+    public HashMap<String, ClientThread> getClients() {
+        return clients;
+    }
 }

@@ -7,6 +7,7 @@ import javafx.scene.text.Text;
 public class Controller {
     Thread serverThread;
     ServerSocketThread serverSocketThread;
+
     @FXML
     Button start;
     @FXML
@@ -24,6 +25,7 @@ public class Controller {
         serverThread = new Thread(serverSocketThread);
         serverThread.setDaemon(true);
         serverThread.start();
+
     }
 
     @FXML

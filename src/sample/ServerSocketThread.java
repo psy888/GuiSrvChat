@@ -3,10 +3,12 @@ package sample;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ServerSocketThread implements Runnable {
+    private static final String DIVIDER = "%";
     private static final int PORT = 8778;
 
 
@@ -15,20 +17,18 @@ public class ServerSocketThread implements Runnable {
     private Thread serverInfoThread;
 
 
-
-
     @Override
     public void run() {
         boolean isInterrupted = false;
         try {
             server = new ServerSocket(PORT);
-            serverInfoThread = new Thread(new ServerSocketInfoThread(this));
-            serverInfoThread.setDaemon(true);
-            serverInfoThread.start();
+//            serverInfoThread = new Thread(new ServerSocketInfoThread(this));
+//            serverInfoThread.setDaemon(true);
+//            serverInfoThread.start();
 
             System.out.println("Server is started");
             while (!isInterrupted) {
-                if(server.isClosed()) break;
+                if (server.isClosed()) break;
                 Socket client = server.accept();
                 ClientThread clientThread = new ClientThread(client, this);
                 Thread thread = new Thread(clientThread);
@@ -46,11 +46,11 @@ public class ServerSocketThread implements Runnable {
     }
 
 
-
     public boolean addClient(String name, ClientThread client) {
         if (clients.get(name) == null) {
             this.clients.put(name, client);
             Main.controller.setUserCount(clients.size());
+            sendMsgToAll(ClientThread.COMMAND_SERVER_INFO, getClientsList()); //send info
             return true;
         }
         return false;
@@ -83,9 +83,10 @@ public class ServerSocketThread implements Runnable {
     public void removeUser(ClientThread client) {
         clients.remove(client.getName(), client);
         Main.controller.setUserCount(clients.size());
+        sendMsgToAll(ClientThread.COMMAND_SERVER_INFO, getClientsList()); // send info
     }
 
-    public void stopServer(){
+    public void stopServer() {
         try {
             server.close();
             System.out.println("Server is stopped");
@@ -96,5 +97,16 @@ public class ServerSocketThread implements Runnable {
 
     public HashMap<String, ClientThread> getClients() {
         return clients;
+    }
+
+    public String getClientsList() {
+        StringBuilder builder = new StringBuilder();
+        String[] names = clients.keySet().toArray(new String[0]);
+        Arrays.sort(names);
+        for (String s : names) {
+            builder.append(s);
+            builder.append(DIVIDER);
+        }
+        return builder.toString();
     }
 }
